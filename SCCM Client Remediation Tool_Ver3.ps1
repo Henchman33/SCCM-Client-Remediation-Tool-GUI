@@ -210,7 +210,8 @@ $scriptBlock = {
                     }
                     Start-Service -Name ccmexec -ErrorAction Stop
                 }
-                "Reset Windows Update components" {
+
+                                "Reset Windows Update components" {
                     Gui-Log "Resetting Windows Update components..."
                     Get-Service -Name wuauserv,bits | Stop-Service -Force -ErrorAction Stop
                     Rename-Item "$env:SystemRoot\SoftwareDistribution" "SoftwareDistribution.old" -Force -ErrorAction Stop
@@ -218,6 +219,16 @@ $scriptBlock = {
                     Start-Service -Name bits -ErrorAction Stop
                     Start-Service -Name wuauserv -ErrorAction Stop
                 }
+
+                    "Reset Windows Update components" {
+                    Gui-Log "Resetting Windows Update components..."
+                    Get-Service -Name wuauserv,bits | Stop-Service -Force -ErrorAction Stop
+                    Rename-Item "$env:SystemRoot\SoftwareDistribution" "SoftwareDistribution.old" -Force -ErrorAction Stop
+                    Rename-Item "$env:SystemRoot\System32\catroot2" "catroot2.old" -Force -ErrorAction Stop
+                    Start-Service -Name bits -ErrorAction Stop
+                    Start-Service -Name wuauserv -ErrorAction Stop
+                }
+
                 "Trigger SCCM client actions" {
                     Gui-Log "Triggering SCCM client actions..."
                     & "$env:Windir\CCM\ccmexec.exe" /forcepolicy
@@ -228,13 +239,6 @@ $scriptBlock = {
                     & "$env:Windir\CCM\ccmexec.exe" /eval
                     & "$env:Windir\CCM\ccmexec.exe" /SoftwareUpdateScan
                 }
-                "Reset WSUS registration" {
-                    Gui-Log "Resetting WSUS registration..."
-                    $null = Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate" -Name "SusClientId" -ErrorAction SilentlyContinue
-                    $null = Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate" -Name "SusClientIDValidation" -ErrorAction SilentlyContinue
-                    & "$env:SystemRoot\system32\wuauclt.exe" /resetauthorization /detectnow
-                }
-            }
 
             $percent = [math]::Round(($completed / $stepsTotal) * 100)
             Gui-Progress $percent
